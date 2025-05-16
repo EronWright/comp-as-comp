@@ -1,20 +1,29 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"os"
+
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
 func main() {
-	err := infer.NewProviderBuilder().
-		WithName("go-components").
+	provider, err := infer.NewProviderBuilder().
 		WithNamespace("mikhailshilkov").
 		WithComponents(
-			infer.Component(NewRandomComponent),
-			infer.Component(NewStaticPage),
+			infer.ComponentF(NewRandomComponent),
+			infer.ComponentF(NewStaticPage),
 		).
-		BuildAndRun()
-
+		Build()
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+		os.Exit(1)
+	}
+
+	err = provider.Run(context.Background(), "go-components", "0.1.0")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+		os.Exit(1)
 	}
 }
